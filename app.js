@@ -5,12 +5,15 @@ const authRoutes = require("./routes/auth");
 const connectDB = require("./db/connect");
 const notFound = require("./routes/notFound");
 const handleErrors = require("./errors/handle-errors");
+const post = require("./routes/post");
+const authMiddleware = require("./middleware/authMiddleware");
 
 //middleware
 app.use(express.json());
 
 //routes
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/post", post);
 app.use(notFound);
 app.use(handleErrors);
 
