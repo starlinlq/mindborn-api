@@ -1,13 +1,19 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
 require("dotenv").config();
 
 const userSchema = mongoose.Schema(
   {
-    name: {
+    username: {
       type: String,
+      match: [/^[a-zA-Z0-9]+$/, "name is invalid, make sure is lowercase"],
       required: [true, "name is required"],
+      lowercase: true,
+      unique: true,
+      maxlength: 15,
+      minlength: 3,
     },
     email: {
       type: String,
@@ -22,6 +28,7 @@ const userSchema = mongoose.Schema(
       type: String,
       minlength: 6,
     },
+    profile: { type: mongoose.Types.ObjectId, ref: "Profile" },
   },
   { timestamps: true }
 );

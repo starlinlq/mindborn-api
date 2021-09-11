@@ -1,8 +1,15 @@
 const CustomError = require("../errors/customError");
 const User = require("../models/user");
+const { StatusCodes } = require("http-status-codes");
 
 const register = async (req, res, next) => {
+  const { email, username } = req.body;
   try {
+    let taken = await User.findOne({ $or: [{ email }, { username }] });
+
+    if (taken) {
+      return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({ taken: true });
+    }
     const user = await User.create(req.body);
     let token = user.generateToken();
     return res

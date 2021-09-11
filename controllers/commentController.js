@@ -19,7 +19,7 @@ const getComments = async (req, res, next) => {
       )
       .select(["username", "content", "userId", "repliesIds", "repliesCount"]);
     if (!comments) {
-      next(new CustomError("comments not found", StatusCodes.NOT_FOUND));
+      return next(new CustomError("comments not found", StatusCodes.NOT_FOUND));
     }
 
     res.status(200).send({ comments });
@@ -110,8 +110,18 @@ const updateComment = async (req, res, next) => {
   }
 };
 
-const deleteComment = () => {
-  res.send("delete comment");
+const deleteComment = async (req, res, next) => {
+  let commentId = req.params.id;
+  let userId = req.user.id;
+  try {
+    let comment = await Comment.findOneAndDelete({ _id: commentId, userId });
+    if (!comment) {
+      return next(new CustomError("comment not found", StatusCodes.NOT_FOUND));
+    }
+    return res.status(StatusCodes.OK).send("");
+  } catch (error) {
+    next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
+  }
 };
 
 const deleteReply = async (req, res, next) => {
