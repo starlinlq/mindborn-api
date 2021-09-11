@@ -17,7 +17,10 @@ const postSchema = mongoose.Schema(
       ref: "User",
       required: [true, "please add creator"],
     },
-    interestingVotes: { type: Object, default: { up: 0, down: 0 } },
+    interestingVotes: { type: Array },
+    comments: [
+      { commentId: { type: mongoose.Types.ObjectId, ref: "Comment" } },
+    ],
     category: {
       type: String,
       required: [true, "please add category"],
@@ -26,14 +29,16 @@ const postSchema = mongoose.Schema(
   { timestamps: true }
 );
 
-postSchema.methods.upVote = function () {
-  this.interestingVotes.up = +1;
+postSchema.methods.upVote = function (userId) {
+  this.interestingVotes.push({ userId });
 };
 
-postSchema.methods.downVote = function () {
-  if (this.interestingVotes.down !== 0) {
-    this.interestingVotes.down -= 1;
-  }
+postSchema.methods.removeVote = function (userId) {
+  this.interestingVotes = this.interestingVotes.filter(
+    (match) => match.userId !== userId
+  );
 };
+
+postSchema.methods.addComment = function (commentId) {};
 
 module.exports = mongoose.model("Post", postSchema);

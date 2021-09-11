@@ -7,10 +7,16 @@ const {
   updatePost,
   deletePost,
   getUserPost,
+  upVotePost,
+  deleteVote,
 } = require("../controllers/postController");
 const authMiddleware = require("../middleware/authMiddleware");
 
 router.route("/user").get(authMiddleware, getUserPost);
+router
+  .route("/upvote/:id")
+  .post(authMiddleware, upVotePost)
+  .delete(authMiddleware, deleteVote);
 router.route("/").get(getAllPost).post(authMiddleware, createPost);
 router
   .route("/:id")

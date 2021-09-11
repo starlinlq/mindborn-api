@@ -71,6 +71,33 @@ const deletePost = async (req, res, next) => {
   }
 };
 
+const upVotePost = async (req, res, next) => {
+  let postId = req.params.id;
+  let userId = req.user.id;
+  try {
+    let post = await Post.findOne({ _id: postId });
+    post.upVote(userId);
+    await post.save();
+    return res.status(200).json({ post });
+  } catch (error) {
+    next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
+  }
+};
+
+const deleteVote = async (req, res, next) => {
+  let postId = req.params.id;
+  let userId = req.user.id;
+
+  try {
+    let post = await Post.findOne({ _id: postId });
+    post.removeVote(userId);
+    await post.save();
+    res.status(StatusCodes.OK).json({ post });
+  } catch (error) {
+    next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
+  }
+};
+
 module.exports = {
   getAllPost,
   createPost,
@@ -78,4 +105,6 @@ module.exports = {
   updatePost,
   deletePost,
   getUserPost,
+  upVotePost,
+  deleteVote,
 };
