@@ -34,6 +34,7 @@ const getSinglePost = async (req, res, next) => {
   let postId = req.params.id;
   try {
     let post = await Post.findOne({ _id: postId });
+
     if (!post) {
       return next(new CustomError("post not found", StatusCodes.NOT_FOUND));
     }

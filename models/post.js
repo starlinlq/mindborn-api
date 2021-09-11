@@ -19,11 +19,22 @@ const postSchema = mongoose.Schema(
     },
     interestingVotes: { type: Array },
     comments: [
-      { commentId: { type: mongoose.Types.ObjectId, ref: "Comment" } },
+      {
+        comment: {
+          type: mongoose.Types.ObjectId,
+          ref: "Comment",
+          _id: false,
+        },
+        _id: false,
+      },
     ],
     category: {
       type: String,
       required: [true, "please add category"],
+    },
+    commentCount: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }
@@ -39,6 +50,16 @@ postSchema.methods.removeVote = function (userId) {
   );
 };
 
-postSchema.methods.addComment = function (commentId) {};
+postSchema.methods.addComment = function (comment) {
+  this.commentCount += 1;
+  console.log(this.commentCount);
+  this.comments.push({ comment });
+};
+
+postSchema.methods.handleCommentCount = function (n) {
+  if (this.commentCount >= 0) {
+    this.commentCount += n;
+  }
+};
 
 module.exports = mongoose.model("Post", postSchema);
