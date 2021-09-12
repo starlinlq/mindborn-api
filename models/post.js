@@ -18,6 +18,7 @@ const postSchema = mongoose.Schema(
       required: [true, "please add creator"],
     },
     interestingVotes: { type: Array },
+    votesCount: { type: Number, default: 0 },
     comments: [
       {
         comment: {
@@ -41,13 +42,17 @@ const postSchema = mongoose.Schema(
 );
 
 postSchema.methods.upVote = function (userId) {
+  this.votesCount += 1;
   this.interestingVotes.push({ userId });
 };
 
 postSchema.methods.removeVote = function (userId) {
-  this.interestingVotes = this.interestingVotes.filter(
-    (match) => match.userId !== userId
-  );
+  if (this.votesCount > 0) {
+    this.votesCount -= 1;
+    this.interestingVotes = this.interestingVotes.filter(
+      (match) => match.userId !== userId
+    );
+  }
 };
 
 postSchema.methods.addComment = function (comment) {

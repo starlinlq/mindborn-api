@@ -15,9 +15,19 @@ const getComments = async (req, res, next) => {
           "userId",
           "repliesIds",
           "repliesCount",
+          "likeCount",
         ])
       )
-      .select(["username", "content", "userId", "repliesIds", "repliesCount"]);
+      .select([
+        "username",
+        "content",
+        "userId",
+        "repliesIds",
+        "repliesCount",
+        "likeCount",
+      ])
+      .sort({ likeCount: -1 });
+
     if (!comments) {
       return next(new CustomError("comments not found", StatusCodes.NOT_FOUND));
     }
@@ -145,6 +155,37 @@ const deleteReply = async (req, res, next) => {
   }
 };
 
+const likeComment = async (req, res, next) => {
+  let commentId = req.params.id;
+  let userId = req.user.id;
+  try {
+    let comment = await Comment.findOne({ _id: commentId });
+    if (!comment) {
+      return next(new CustomError("comment not found", StatusCodes.NOT_FOUND));
+    }
+    comment.like(userId);
+    await comment.save();
+    res.status(StatusCodes.OK).send("");
+  } catch (error) {
+    next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
+  }
+};
+const dislikeComment = async (req, res, next) => {
+  let commentId = req.params.id;
+  let userId = req.user.id;
+  try {
+    let comment = await Comment.findOne({ _id: commentId });
+    if (!comment) {
+      return next(new CustomError("comment not found", StatusCodes.NOT_FOUND));
+    }
+    comment.dislike(userId);
+    await comment.save();
+    res.status(StatusCodes.OK).send("");
+  } catch (error) {
+    next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
+  }
+};
+
 module.exports = {
   getComments,
   loadReplies,
@@ -153,4 +194,6 @@ module.exports = {
   deleteReply,
   createReply,
   deleteComment,
+  likeComment,
+  dislikeComment,
 };

@@ -5,7 +5,10 @@ const Post = require("../models/post");
 
 const getAllPost = async (req, res, next) => {
   try {
-    const posts = await Post.find({});
+    const posts = await Post.find({})
+      .populate("createdBy", (select = ["username", "_id", "photourl"]))
+      .select(["-__v", "-updatedAt"])
+      .sort({ votesCount: -1, createdAt: 1 });
     return res.status(StatusCodes.OK).json({ posts });
   } catch (error) {
     next(new CustomError(error.message, StatusCodes.INTERNAL_SERVER_ERROR));

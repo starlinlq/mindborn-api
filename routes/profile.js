@@ -4,7 +4,10 @@ const {
   getProfile,
   updateProfile,
 } = require("../controllers/profileController");
+const authMiddleware = require("../middleware/authMiddleware");
+const Profile = require("../models/profile");
 
-router.route("/:id").get(getProfile).patch(updateProfile);
+router.route("/:id").get(getProfile);
+router.route("/").patch(authMiddleware, updateProfile);
 
 module.exports = router;

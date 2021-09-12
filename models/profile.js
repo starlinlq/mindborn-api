@@ -4,7 +4,7 @@ const profileSchema = new Schema({
   name: {
     type: String,
     minLength: 3,
-    maxlength: 10,
+    maxlength: 15,
     required: [true, "name is required"],
   },
   bio: {
