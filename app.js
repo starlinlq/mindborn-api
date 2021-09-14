@@ -10,9 +10,15 @@ const post = require("./routes/post");
 const commentRoutes = require("./routes/comment");
 const profileRoutes = require("./routes/profile");
 const upload = require("./controllers/upload");
+const cors = require("cors");
 
 //middleware
 app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:3001",
+  })
+);
 app.use(
   fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 },

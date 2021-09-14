@@ -37,6 +37,7 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   const { password, username } = req.body;
+  console.log(password);
 
   if (password === "" || username === "") {
     next(new CustomError("password or email cannot be blank", 400));
@@ -55,10 +56,17 @@ const login = async (req, res, next) => {
       return next(new CustomError("invalid credentials", 401));
     }
     let token = user.generateToken();
-    res.status(200).json({ user: { name: user.name, id: user._id }, token });
+    res.status(200).json({
+      user: { username: user.username, id: user._id, photourl: user.photourl },
+      token,
+    });
   } catch (error) {
     next(new CustomError(error.message, 400));
   }
 };
 
-module.exports = { login, register };
+const validateToken = async (req, res, next) => {
+  res.status(StatusCodes.OK).json(req.user);
+};
+
+module.exports = { login, register, validateToken };

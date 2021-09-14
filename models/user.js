@@ -35,7 +35,7 @@ const userSchema = mongoose.Schema(
 
 userSchema.methods.generateToken = function () {
   return jwt.sign(
-    { id: this._id, username: this.username },
+    { id: this._id, username: this.username, photourl: this.photourl },
     process.env.JWT_SECRET,
     {
       expiresIn: process.env.JWT_LIFETIME,
@@ -49,7 +49,7 @@ userSchema.methods.hashPassword = async function () {
 };
 
 userSchema.methods.verifyPassword = async function (inputPassword) {
-  let match = await bcrypt.compare("password", this.password);
+  let match = await bcrypt.compare(inputPassword, this.password);
 
   return match;
 };
