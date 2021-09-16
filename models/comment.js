@@ -16,6 +16,7 @@ const commentSchema = new Schema(
       required: [true, "please add user id"],
     },
     likeCount: { type: Number, default: 0 },
+    commentId: { type: String },
     likeIds: { type: Array },
     repliesIds: [
       {

@@ -4,46 +4,40 @@ const Comment = require("../models/comment");
 const Post = require("../models/post");
 
 const getComments = async (req, res, next) => {
-  let postId = req.params.id;
+  let { postid, query, limit } = req.query;
   try {
-    let comments = await Comment.find({ postId, isReply: false })
-      .populate(
-        "repliesIds.commentId",
-        (select = [
-          "username",
-          "content",
-          "userId",
-          "repliesIds",
-          "repliesCount",
-          "likeCount",
-        ])
-      )
+    let comments = await Comment.find({ postId: postid, isReply: false })
       .select([
-        "username",
+        "_id",
         "content",
-        "userId",
-        "repliesIds",
-        "repliesCount",
+        "createdAt",
         "likeCount",
+        "postId",
+        "repliesCount",
+        "userId",
+        "likeIds",
       ])
-      .sort({ likeCount: -1 });
+      .sort(`${query}`)
+      .limit(limit);
 
     if (!comments) {
       return next(new CustomError("comments not found", StatusCodes.NOT_FOUND));
     }
 
-    res.status(200).send({ comments });
+    return res.status(200).send({ comments });
   } catch (error) {
     next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
   }
 };
 
 const loadReplies = async (req, res, next) => {
+  console.log(req.params.id);
   try {
-    let comment = await Comment.findOne({ _id: req.params.id }).populate({
-      path: "repliesIds.commentId",
-      select: ["username", "content", "userId", "repliesIds", "repliesCount"],
-    });
+    let comment = await Comment.find({
+      commentId: req.params.id,
+    })
+      .select(["content", "likeCount", "userId", "_id", "createdAt", "likeIds"])
+      .populate("userId", (select = ["username", "_id", "photourl"]));
     if (!comment) {
       return next(new CustomError("replies not found", StatusCodes.NOT_FOUND));
     }
@@ -54,25 +48,37 @@ const loadReplies = async (req, res, next) => {
 };
 
 const createComment = async (req, res, next) => {
-  const { postId } = req.body;
+  const { postId, content } = req.body;
   try {
     const post = await Post.findOne({ _id: postId });
     if (!post) {
       return next(new CustomError("post not found", StatusCodes.NOT_FOUND));
     }
 
-    const comment = await Comment.create(req.body);
+    const comment = await Comment.create({
+      content,
+      postId,
+      username: req.user.username,
+      userId: req.user.id,
+    });
     post.addComment(comment._id);
     await post.save();
 
-    return res.status(StatusCodes.CREATED).json({ comment });
+    return res.status(StatusCodes.CREATED).json({
+      comment,
+      user: {
+        id: req.user.id,
+        username: req.user.username,
+        photourl: req.user.photourl,
+      },
+    });
   } catch (error) {
     next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
   }
 };
 
 const createReply = async (req, res, next) => {
-  const { commentId, userId, content, username, postId } = req.body;
+  const { commentId, content, postId } = req.body;
 
   try {
     let comment = await Comment.findOne({ _id: commentId });
@@ -88,14 +94,25 @@ const createReply = async (req, res, next) => {
     post.handleCommentCount(1);
     await post.save();
     let newComment = await Comment.create({
-      userId,
+      userId: req.user.id,
       content,
-      username,
+      username: req.user.username,
       isReply: true,
+      commentId,
     });
     comment.reply(newComment._id);
     await comment.save();
-    res.status(StatusCodes.CREATED).json({ comment: newComment });
+    res.status(StatusCodes.CREATED).json({
+      content: newComment.content,
+      _id: newComment._id,
+      likeCount: newComment.likeCount,
+      userId: {
+        username: req.user.username,
+        id: req.user.id,
+        photourl: req.user.photourl,
+      },
+      createdAt: newComment.createdAt,
+    });
   } catch (error) {
     next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
   }

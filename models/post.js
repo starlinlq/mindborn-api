@@ -8,12 +8,12 @@ const postSchema = mongoose.Schema(
     },
     description: {
       type: String,
-      required: [true, "please add a description"],
       minlenght: 10,
       maxlength: 2000,
     },
     createdBy: {
       type: mongoose.Types.ObjectId,
+      _id: false,
       ref: "User",
       required: [true, "please add creator"],
     },

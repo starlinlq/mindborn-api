@@ -1,5 +1,6 @@
 const CustomError = require("../errors/customError");
 const { StatusCodes } = require("http-status-codes");
+const Comment = require("../models/comment");
 
 const Post = require("../models/post");
 
@@ -27,7 +28,7 @@ const getUserPost = async (req, res) => {
 const createPost = async (req, res, next) => {
   try {
     let post = await Post.create({ ...req.body, createdBy: req.user.id });
-    return res.status(StatusCodes.CREATED).json({ post });
+    return res.status(StatusCodes.CREATED).json({ id: post._id });
   } catch (error) {
     next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
   }
@@ -36,12 +37,34 @@ const createPost = async (req, res, next) => {
 const getSinglePost = async (req, res, next) => {
   let postId = req.params.id;
   try {
-    let post = await Post.findOne({ _id: postId });
+    let post = await Post.findOne({ _id: postId })
+      .select(["-updatedAt", "-__v", "-comments"])
+      .populate("createdBy", (select = ["username", "_id"]));
+
+    let comments = await Comment.find({ postId: post._id })
+      .populate("userId", (select = ["username", "photourl", "id"]))
+      .select([
+        "_id",
+        "content",
+        "createdAt",
+        "likeCount",
+        "postId",
+        "repliesCount",
+        "userId",
+        "likeIds",
+      ])
+
+      .sort({ likeCount: -1 })
+      .limit(10);
+
+    let commentsCount = await Comment.find({
+      postId: post._id,
+    }).countDocuments();
 
     if (!post) {
       return next(new CustomError("post not found", StatusCodes.NOT_FOUND));
     }
-    return res.status(StatusCodes.OK).json({ post });
+    return res.status(StatusCodes.OK).json({ post, comments, commentsCount });
   } catch (error) {
     return next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
   }
