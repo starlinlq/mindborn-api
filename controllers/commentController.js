@@ -17,6 +17,7 @@ const getComments = async (req, res, next) => {
         "userId",
         "likeIds",
       ])
+      .populate("userId", (select = ["_id", "username", "photourl"]))
       .sort(`${query}`)
       .limit(limit);
 
@@ -67,7 +68,7 @@ const createComment = async (req, res, next) => {
     return res.status(StatusCodes.CREATED).json({
       comment,
       user: {
-        id: req.user.id,
+        _id: req.user.id,
         username: req.user.username,
         photourl: req.user.photourl,
       },
@@ -104,11 +105,13 @@ const createReply = async (req, res, next) => {
     await comment.save();
     res.status(StatusCodes.CREATED).json({
       content: newComment.content,
+      likeIds: newComment.likeIds,
+      isReply: newComment.isReply,
       _id: newComment._id,
       likeCount: newComment.likeCount,
       userId: {
         username: req.user.username,
-        id: req.user.id,
+        _id: req.user.id,
         photourl: req.user.photourl,
       },
       createdAt: newComment.createdAt,
@@ -142,6 +145,11 @@ const deleteComment = async (req, res, next) => {
   let userId = req.user.id;
   try {
     let comment = await Comment.findOneAndDelete({ _id: commentId, userId });
+
+    let post = await Post.findOne({ _id: comment.postId });
+    post.handleCommentCount(-1);
+    await post.save();
+
     if (!comment) {
       return next(new CustomError("comment not found", StatusCodes.NOT_FOUND));
     }
@@ -152,10 +160,14 @@ const deleteComment = async (req, res, next) => {
 };
 
 const deleteReply = async (req, res, next) => {
-  const { main, reply, userId } = req.query;
+  const { main, reply } = req.query;
+  let userId = req.user.id;
   try {
     let mainComment = await Comment.findOne({ _id: main });
     let deleted = await Comment.findOneAndDelete({ _id: reply, userId });
+    let post = await Post.findOne({ _id: mainComment.postId });
+    post.handleCommentCount(-1);
+    await post.save();
     if (!deleted || !mainComment) {
       return next(
         new CustomError(

@@ -17,7 +17,7 @@ const postSchema = mongoose.Schema(
       ref: "User",
       required: [true, "please add creator"],
     },
-    interestingVotes: { type: Array },
+    interestingVotes: [],
     votesCount: { type: Number, default: 0 },
     comments: [
       {
@@ -37,6 +37,7 @@ const postSchema = mongoose.Schema(
       type: Number,
       default: 0,
     },
+    bookmarkIds: [],
   },
   { timestamps: true }
 );
@@ -65,6 +66,14 @@ postSchema.methods.handleCommentCount = function (n) {
   if (this.commentCount >= 0) {
     this.commentCount += n;
   }
+};
+
+postSchema.methods.addBookmark = function (userId) {
+  this.bookmarkIds.push(userId);
+};
+
+postSchema.methods.unBookmark = function (userId) {
+  this.bookmarkIds = this.bookmarkIds.filter((match) => match !== userId);
 };
 
 module.exports = mongoose.model("Post", postSchema);

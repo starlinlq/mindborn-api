@@ -12,7 +12,7 @@ const {
 } = require("../controllers/postController");
 const authMiddleware = require("../middleware/authMiddleware");
 
-router.route("/user").get(authMiddleware, getUserPost);
+router.route("/user/").get(authMiddleware, getUserPost);
 router
   .route("/upvote/:id")
   .post(authMiddleware, upVotePost)
