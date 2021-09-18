@@ -82,10 +82,9 @@ const unFollow = async (req, res, next) => {
 const getFollowers = async (req, res, next) => {
   let userId = req.params.id;
   try {
-    let followers = await Follower.find({ userId }).populate(
-      "follower_id",
-      (select = ["username", "photourl", "_id"])
-    );
+    let followers = await Follower.find({ userId })
+      .populate("follower_id", (select = ["username", "photourl", "_id"]))
+      .select(["follower_id", "-_id"]);
     if (!followers) {
       res.status(new StatusCodes.NOT_FOUND()).send("followers not found");
     }

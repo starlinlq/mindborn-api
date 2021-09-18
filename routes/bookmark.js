@@ -3,7 +3,7 @@ const {
   bookmark,
   unBookmark,
   getBookmarks,
-} = require("../controllers/bookmarrk");
+} = require("../controllers/bookmark");
 const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
 

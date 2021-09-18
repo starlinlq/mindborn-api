@@ -38,6 +38,7 @@ const getBookmarks = async (req, res, next) => {
           "votesCount",
           "commentCount",
           "bookmarkIds",
+          "interestingVotes",
         ])
       );
 
