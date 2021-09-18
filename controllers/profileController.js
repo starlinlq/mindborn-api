@@ -9,12 +9,20 @@ const Following = require("../models/following");
 const getProfile = async (req, res, next) => {
   let userId = req.params.id;
   try {
-    let profile = await Profile.findOne({ userId });
-    let posts = await Post.find({ createdBy: userId });
+    let profile = await Profile.findOne({ userId }).select(["-_id"]);
+    let following = await Following.find({ userId });
+    let followers = await Follower.find({
+      userId,
+    }).select(["follower_id", "-_id"]);
     if (!profile) {
       return next(new CustomError("profile not found", StatusCodes.NOT_FOUND));
     }
-    return res.status(StatusCodes.OK).json({ profile, posts });
+    return res.status(StatusCodes.OK).json({
+      profile,
+      followers: followers.length,
+      followersIds: followers,
+      following: following.length,
+    });
   } catch (error) {
     next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
   }
@@ -43,13 +51,14 @@ const updateProfile = async (req, res, next) => {
 
 const follow = async (req, res, next) => {
   const id = req.params.id;
+  console.log(id, req.user.id);
   try {
     await Following.create({
-      _id: req.user.id,
+      userId: req.user.id,
       following_id: id,
     });
     await Follower.create({
-      _id: id,
+      userId: id,
       follower_id: req.user.id,
     });
     return res.status(StatusCodes.OK).send("");
@@ -62,8 +71,8 @@ const unFollow = async (req, res, next) => {
   let id = req.params.id;
   let userId = req.user.id;
   try {
-    await Following.findOneAndDelete({ _: userId, following_id: id });
-    await Follower.findOneAndDelete({ _id: id, follower_id: userId });
+    await Following.findOneAndDelete({ userId, following_id: id });
+    await Follower.findOneAndDelete({ userId: id, follower_id: userId });
     res.status(StatusCodes.OK).send("");
   } catch (error) {
     next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
@@ -73,14 +82,14 @@ const unFollow = async (req, res, next) => {
 const getFollowers = async (req, res, next) => {
   let userId = req.params.id;
   try {
-    let followers = await Follower.find({ _id: userId }).populate(
+    let followers = await Follower.find({ userId }).populate(
       "follower_id",
       (select = ["username", "photourl", "_id"])
     );
     if (!followers) {
       res.status(new StatusCodes.NOT_FOUND()).send("followers not found");
     }
-    return res.status(StatusCodes.OK).json({ followers });
+    return res.status(StatusCodes.OK).json({ data: followers });
   } catch (error) {
     next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
   }
@@ -88,14 +97,13 @@ const getFollowers = async (req, res, next) => {
 const getFollowing = async (req, res, next) => {
   let userId = req.params.id;
   try {
-    let following = await Following.find({ _id: userId }).populate(
-      "following_id",
-      (select = ["username", "photourl", "_id"])
-    );
+    let following = await Following.find({ userId })
+      .populate("following_id", (select = ["username", "photourl", "_id"]))
+      .select(["following_id", "-_id"]);
     if (!following) {
       res.status(new StatusCodes.NOT_FOUND()).send("followers not found");
     }
-    return res.status(StatusCodes.OK).json({ following });
+    return res.status(StatusCodes.OK).json({ data: following });
   } catch (error) {
     next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
   }
