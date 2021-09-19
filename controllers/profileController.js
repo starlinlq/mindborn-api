@@ -1,7 +1,6 @@
 const Profile = require("../models/profile");
 const { StatusCodes } = require("http-status-codes");
 const CustomError = require("../errors/customError");
-const Post = require("../models/post");
 const User = require("../models/user");
 const Follower = require("../models/follower");
 const Following = require("../models/following");
@@ -27,6 +26,7 @@ const getProfile = async (req, res, next) => {
     next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
   }
 };
+
 const updateProfile = async (req, res, next) => {
   const { name, bio, photourl, location } = req.body;
 
@@ -41,9 +41,11 @@ const updateProfile = async (req, res, next) => {
       user.photourl = photourl;
       await user.save();
       await profile.save();
-      return res.status(StatusCodes.OK);
+      return res.status(StatusCodes.OK).send("profile updated");
     }
-    return res.status(StatusCodes.BAD_REQUEST);
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ msg: "something went wrong updating your profile" });
   } catch (error) {
     next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
   }

@@ -5,29 +5,39 @@ const Comment = require("../models/comment");
 const Post = require("../models/post");
 
 const getAllPost = async (req, res, next) => {
-  const { filterBy, category, limit } = req.query;
+  const { filterBy, category, limit, q } = req.query;
+
   try {
     if (category === "all") {
-      const posts = await Post.find({})
+      const posts = await Post.find(
+        q ? { title: { $regex: q, $options: "i" } } : {}
+      )
         .populate("createdBy", (select = ["username", "_id", "photourl"]))
         .select(["-__v", "-updatedAt"])
         .sort(`${filterBy}`)
         .limit(Number(limit));
       //get length
-      const count = await Post.find({})
+      const count = await Post.find(
+        q ? { title: { $regex: q, $options: "i" } } : {}
+      )
         .populate("createdBy", (select = ["username", "_id", "photourl"]))
         .select(["-__v", "-updatedAt"])
         .sort(`${filterBy}`)
         .countDocuments();
       return res.status(StatusCodes.OK).json({ posts, length: count });
     }
-    const posts = await Post.find({ category })
+
+    const posts = await Post.find(
+      q ? { title: { $regex: q, $options: "i" }, category } : { category }
+    )
       .populate("createdBy", (select = ["username", "_id", "photourl"]))
       .select(["-__v", "-updatedAt"])
       .sort(`${filterBy}`)
       .limit(limit);
     //get length
-    const count = await Post.find({})
+    const count = await Post.find(
+      q ? { title: { $regex: q, $options: "i" }, category } : { category }
+    )
       .populate("createdBy", (select = ["username", "_id", "photourl"]))
       .select(["-__v", "-updatedAt"])
       .sort(`${filterBy}`)
@@ -42,22 +52,19 @@ const getUserPost = async (req, res, next) => {
   const { filterBy, category, userId } = req.query;
 
   try {
-    if (category === "all") {
-      let posts = await Post.find({ createdBy: userId })
-        .sort(`${filterBy}`)
-        .populate("createdBy", (select = ["username", "_id", "photourl"]));
-      //get length
-      let length = await Post.find({ createdBy: userId })
-        .sort(`${filterBy}`)
-        .populate("createdBy", (select = ["username", "_id", "photourl"]))
-        .countDocuments();
-      return res.status(StatusCodes.OK).json({ posts, length });
-    }
-    let posts = await Post.find({ createdBy: userId, category })
+    let posts = await Post.find(
+      category === "all"
+        ? { createdBy: userId }
+        : { createdBy: userId, category }
+    )
       .sort(`${filterBy}`)
       .populate("createdBy", (select = ["username", "_id", "photourl"]));
     //get length
-    let length = await Post.find({ createdBy: userId })
+    let length = await Post.find(
+      category === "all"
+        ? { createdBy: userId }
+        : { createdBy: userId, category }
+    )
       .sort(`${filterBy}`)
       .populate("createdBy", (select = ["username", "_id", "photourl"]))
       .countDocuments();
@@ -134,7 +141,7 @@ const deletePost = async (req, res, next) => {
   let userId = req.user.id;
   try {
     await Post.deleteOne({ createdBy: userId, _id: postId });
-    return res.status(StatusCodes.OK);
+    return res.status(StatusCodes.OK).send("post deleted");
   } catch (error) {
     next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
   }

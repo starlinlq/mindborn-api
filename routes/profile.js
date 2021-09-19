@@ -7,9 +7,9 @@ const {
   unFollow,
   getFollowing,
   getFollowers,
+  searchProfile,
 } = require("../controllers/profileController");
 const authMiddleware = require("../middleware/authMiddleware");
-
 
 router.route("/:id").get(getProfile);
 router
