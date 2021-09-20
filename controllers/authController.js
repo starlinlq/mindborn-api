@@ -4,7 +4,9 @@ const { StatusCodes } = require("http-status-codes");
 const Profile = require("../models/profile");
 
 const register = async (req, res, next) => {
-  const { email, username, name, bio, photourl, location, password } = req.body;
+  const { email, username, name, password } = req.body;
+  let photourl =
+    "https://t3.ftcdn.net/jpg/03/91/19/22/360_F_391192211_2w5pQpFV1aozYQhcIw3FqA35vuTxJKrB.jpg";
   try {
     let taken = await User.findOne({ $or: [{ email }, { username }] });
 
@@ -18,9 +20,9 @@ const register = async (req, res, next) => {
 
     let profile = await Profile.create({
       name,
-      bio,
       photourl,
-      location,
+      bio: "Living my best",
+      location: "Going places",
       userId: user._id,
     });
     await user.hashPassword();
@@ -31,7 +33,7 @@ const register = async (req, res, next) => {
     let token = user.generateToken();
     return res
       .status(200)
-      .json({ user: { id: user._id, name: user.name, profile }, token });
+      .json({ id: user._id, username, token, photourl: user.photourl });
   } catch (error) {
     next(new CustomError(error.message, 400));
   }
@@ -135,6 +137,22 @@ const searchUser = async (req, res, next) => {
   } catch (error) {}
 };
 
+const getUser = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    let user = await User.findOne({ _id: id }).select([
+      "photourl",
+      "username",
+      "_id",
+    ]);
+    if (user) {
+      res.status(StatusCodes.OK).json(user);
+    }
+  } catch (error) {
+    next(new CustomError(error.message, StatusCodes.BAD_REQUEST));
+  }
+};
+
 const validateToken = async (req, res, next) => {
   res.status(StatusCodes.OK).json(req.user);
 };
@@ -146,4 +164,5 @@ module.exports = {
   updateUserId,
   updateUserPassword,
   searchUser,
+  getUser,
 };

@@ -12,6 +12,9 @@ const profileRoutes = require("./routes/profile");
 const upload = require("./controllers/upload");
 const cors = require("cors");
 const bookmarkRoutes = require("./routes/bookmark");
+const conversationRoutes = require("./routes/conversations");
+const messagesRoutes = require("./routes/messages");
+const { addMessages } = require("./controllers/messageController");
 
 //middleware
 app.use(express.json());
@@ -29,13 +32,18 @@ app.use(
 );
 
 //routes
+
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/post", post);
 app.use("/api/v1/comment", commentRoutes);
 app.use("/api/v1/user", profileRoutes);
 app.use("/api/v1/bookmark", bookmarkRoutes);
+app.use("/api/v1/conversation", conversationRoutes);
+app.use("/api/v1/messages", messagesRoutes);
+
 //upload
 app.post("/api/v1/upload", upload);
+
 //routes middleware
 app.use(notFound);
 app.use(handleErrors);

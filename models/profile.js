@@ -9,14 +9,14 @@ const profileSchema = new Schema({
   },
   bio: {
     type: String,
-    minLength: 10,
+    minLength: 0,
     maxlength: 150,
     required: [true, "please add bio"],
   },
   photourl: { type: String, required: [true, "photo is required"] },
   location: {
     type: String,
-    minlength: 2,
+    minlength: 0,
     maxlength: 15,
     required: [true, "locaiton is required"],
   },
