@@ -88,7 +88,7 @@ const getSinglePost = async (req, res, next) => {
   try {
     let post = await Post.findOne({ _id: postId })
       .select(["-updatedAt", "-__v", "-comments"])
-      .populate("createdBy", (select = ["username", "_id"]));
+      .populate("createdBy", (select = ["username", "_id", "photourl"]));
 
     let comments = await Comment.find({ postId: post._id })
       .populate("userId", (select = ["username", "photourl", "id"]))

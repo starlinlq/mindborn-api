@@ -12,8 +12,10 @@ const addMessages = async (req, res, next) => {
 const getMessages = async (req, res, next) => {
   try {
     let conversation = await Message.find({
-      conversationid: req.params.id,
-    });
+      conversationId: req.params.id,
+    })
+      .select(["-updatedAt", "-_v"])
+      .populate("sender", (select = ["username", "photourl", "_id"]));
     res.status(200).json(conversation);
   } catch (error) {}
 };

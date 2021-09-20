@@ -15,6 +15,9 @@ const bookmarkRoutes = require("./routes/bookmark");
 const conversationRoutes = require("./routes/conversations");
 const messagesRoutes = require("./routes/messages");
 const { addMessages } = require("./controllers/messageController");
+const {
+  getConversationTwoUsers,
+} = require("./controllers/conversationController");
 
 //middleware
 app.use(express.json());
@@ -40,7 +43,6 @@ app.use("/api/v1/user", profileRoutes);
 app.use("/api/v1/bookmark", bookmarkRoutes);
 app.use("/api/v1/conversation", conversationRoutes);
 app.use("/api/v1/messages", messagesRoutes);
-
 //upload
 app.post("/api/v1/upload", upload);
 
