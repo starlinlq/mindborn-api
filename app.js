@@ -49,15 +49,74 @@ app.use(handleErrors);
 
 const PORT = process.env.PORT || "3000";
 
+const server = app.listen(PORT, () => {
+  console.log(`server listening on port ${PORT}`);
+});
+
+module.exports = server;
+
 const start = async () => {
   try {
     await connectDB(process.env.MONGO_URI);
-    app.listen(PORT, () => {
-      console.log(`server listening on port ${PORT}`);
-    });
   } catch (error) {
     console.log(error);
   }
 };
 
 start();
+
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "http://localhost:3001",
+  },
+});
+let users = [];
+
+const addUser = (user, socketId) => {
+  !users.find((current) => current.id === user.id) &&
+    users.push({ ...user, socketId });
+};
+
+const getUser = (userId) => {
+  return users.find((user) => user.id === userId);
+};
+
+const removeUser = (socketId) => {
+  users = users.filter((user) => user.socketId !== socketId);
+};
+io.on("connection", (socket) => {
+  //when connect
+
+  //take userId and socketid from user
+  socket.on("sendUser", (user) => {
+    addUser(user, socket.id);
+    io.emit("getUsers", users);
+  });
+
+  //send notification
+  socket.on("sendNotification", (notification) => {
+    let reciever = getUser(notification.reciever);
+
+    if (reciever) {
+      io.to(reciever.socketId).emit("getNotification", notification);
+    }
+  });
+
+  //when disconenct
+  socket.on("disconnect", () => {
+    removeUser(socket.id);
+    io.emit("getUsers", users);
+  });
+
+  //take message from user
+  socket.on("sendMessage", ({ sender, recieverId, text }) => {
+    const reciver = getUser(recieverId);
+
+    if (reciver) {
+      io.to(reciver.socketId).emit("getMessage", {
+        sender,
+        text,
+      });
+    }
+  });
+});
