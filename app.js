@@ -14,11 +14,7 @@ const cors = require("cors");
 const bookmarkRoutes = require("./routes/bookmark");
 const conversationRoutes = require("./routes/conversations");
 const messagesRoutes = require("./routes/messages");
-const { addMessages } = require("./controllers/messageController");
-const {
-  getConversationTwoUsers,
-} = require("./controllers/conversationController");
-
+const notificaitonsRoutes = require("./routes/notifications");
 //middleware
 app.use(express.json());
 app.use(
@@ -43,6 +39,7 @@ app.use("/api/v1/user", profileRoutes);
 app.use("/api/v1/bookmark", bookmarkRoutes);
 app.use("/api/v1/conversation", conversationRoutes);
 app.use("/api/v1/messages", messagesRoutes);
+app.use("/api/v1/notification", notificaitonsRoutes);
 //upload
 app.post("/api/v1/upload", upload);
 
