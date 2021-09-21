@@ -54,6 +54,7 @@ app.use("/api/v1/messages", messagesRoutes);
 app.use("/api/v1/notification", notificaitonsRoutes);
 //upload
 app.post("/api/v1/upload", upload);
+app.get("/", (req, res) => res.send("server running"));
 
 //routes middleware
 app.use(notFound);
