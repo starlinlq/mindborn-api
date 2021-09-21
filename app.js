@@ -54,6 +54,7 @@ app.use("/api/v1/messages", messagesRoutes);
 app.use("/api/v1/notification", notificaitonsRoutes);
 //upload
 app.post("/api/v1/upload", upload);
+app.get("/", (req, res) => res.send("running"));
 
 //routes middleware
 app.use(notFound);
@@ -77,11 +78,7 @@ const start = async () => {
 
 start();
 
-const io = require("socket.io")(server, {
-  cors: {
-    origin: "http://localhost:3001",
-  },
-});
+const io = require("socket.io")(server);
 let users = [];
 
 const addUser = (user, socketId) => {
