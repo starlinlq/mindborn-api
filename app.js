@@ -21,14 +21,13 @@ const rateLimiter = require("express-rate-limit");
 
 //middleware
 app.use(express.json());
-/*
+
 app.use(
   cors({
-    origin: "http://localhost:3001",
+    origin: "https://optimistic-sammet-ffd7f3.netlify.app/",
   })
 );
 
-*/
 app.use(
   fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 },
@@ -38,7 +37,7 @@ app.use(
 );
 
 app.use(helmet());
-app.use(cors());
+//app.use(cors());
 app.use(xss());
 app.use(rateLimiter({ windowMs: 60 * 1000 }));
 
