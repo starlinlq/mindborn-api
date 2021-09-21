@@ -15,13 +15,20 @@ const bookmarkRoutes = require("./routes/bookmark");
 const conversationRoutes = require("./routes/conversations");
 const messagesRoutes = require("./routes/messages");
 const notificaitonsRoutes = require("./routes/notifications");
+const helmet = require("helmet");
+const xss = require("xss-clean");
+const rateLimiter = require("express-rate-limit");
+
 //middleware
 app.use(express.json());
+/*
 app.use(
   cors({
     origin: "http://localhost:3001",
   })
 );
+
+*/
 app.use(
   fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 },
@@ -29,6 +36,11 @@ app.use(
     tempFileDir: "/tmp/",
   })
 );
+
+app.use(helmet());
+app.use(cors());
+app.use(xss());
+app.use(rateLimiter({ windowMs: 60 * 1000 }));
 
 //routes
 
