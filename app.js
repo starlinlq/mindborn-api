@@ -21,13 +21,14 @@ const rateLimiter = require("express-rate-limit");
 
 //middleware
 app.use(express.json());
-
+/*
 app.use(
   cors({
-    origin: "https://optimistic-sammet-ffd7f3.netlify.app/",
+    origin: "http://localhost:3001",
   })
 );
 
+*/
 app.use(
   fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 },
@@ -37,7 +38,7 @@ app.use(
 );
 
 app.use(helmet());
-//app.use(cors());
+app.use(cors());
 app.use(xss());
 app.use(rateLimiter({ windowMs: 60 * 1000 }));
 
@@ -53,7 +54,6 @@ app.use("/api/v1/messages", messagesRoutes);
 app.use("/api/v1/notification", notificaitonsRoutes);
 //upload
 app.post("/api/v1/upload", upload);
-app.get("/", (req, res) => res.send("server running"));
 
 //routes middleware
 app.use(notFound);
