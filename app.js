@@ -40,7 +40,7 @@ app.use(
 app.use(helmet());
 app.use(cors());
 app.use(xss());
-app.use(rateLimiter({ windowMs: 60 * 1000 }));
+app.use(rateLimiter({ windowMs: 15 * 60 * 1000 }));
 
 //routes
 

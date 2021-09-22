@@ -18,9 +18,10 @@ const newNotificaiton = async (req, res, next) => {
   }
 };
 const getNotification = async (req, res, next) => {
+  const id = req.params.id;
   try {
     let notifications = await Notification.find({
-      reciever: req.user.id,
+      reciever: id,
     })
       .populate("sender", (select = ["username", "photourl", "_id"]))
       .sort("-createdAt")
