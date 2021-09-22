@@ -21,14 +21,13 @@ const rateLimiter = require("express-rate-limit");
 
 //middleware
 app.use(express.json());
-/*
+
 app.use(
   cors({
     origin: "http://localhost:3001",
   })
 );
 
-*/
 app.use(
   fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 },
@@ -38,9 +37,9 @@ app.use(
 );
 
 app.use(helmet());
-app.use(cors());
+//app.use(cors());
 app.use(xss());
-app.use(rateLimiter({ windowMs: 15 * 60 * 1000 }));
+//app.use(rateLimiter({ windowMs: 60 * 1000 }));
 
 //routes
 
@@ -77,59 +76,3 @@ const start = async () => {
 };
 
 start();
-
-const io = require("socket.io")(server, {
-  cors: {
-    origin: "https://vigorous-pike-e681a8.netlify.app",
-  },
-});
-let users = [];
-
-const addUser = (user, socketId) => {
-  !users.find((current) => current.id === user.id) &&
-    users.push({ ...user, socketId });
-};
-
-const getUser = (userId) => {
-  return users.find((user) => user.id === userId);
-};
-
-const removeUser = (socketId) => {
-  users = users.filter((user) => user.socketId !== socketId);
-};
-io.on("connection", (socket) => {
-  //when connect
-
-  //take userId and socketid from user
-  socket.on("sendUser", (user) => {
-    addUser(user, socket.id);
-    io.emit("getUsers", users);
-  });
-
-  //send notification
-  socket.on("sendNotification", (notification) => {
-    let reciever = getUser(notification.reciever);
-
-    if (reciever) {
-      io.to(reciever.socketId).emit("getNotification", notification);
-    }
-  });
-
-  //when disconenct
-  socket.on("disconnect", () => {
-    removeUser(socket.id);
-    io.emit("getUsers", users);
-  });
-
-  //take message from user
-  socket.on("sendMessage", ({ sender, recieverId, text }) => {
-    const reciver = getUser(recieverId);
-
-    if (reciver) {
-      io.to(reciver.socketId).emit("getMessage", {
-        sender,
-        text,
-      });
-    }
-  });
-});

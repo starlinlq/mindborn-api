@@ -5,7 +5,7 @@ const {
 const authMiddleware = require("../middleware/authMiddleware");
 const router = require("express").Router();
 
+router.route("/").post(newNotificaiton);
 router.route("/:id").get(getNotification);
-router.post("/").post(newNotificaiton);
 
 module.exports = router;

@@ -12,7 +12,7 @@ const newNotificaiton = async (req, res, next) => {
       belongsTo,
       type,
     });
-    res.status(200).json(noti);
+    return res.status(200).json(noti);
   } catch (error) {
     next(new CustomError(error.message, 400));
   }
