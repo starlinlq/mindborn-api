@@ -78,7 +78,11 @@ const start = async () => {
 
 start();
 
-const io = require("socket.io")(server);
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "https://vigorous-pike-e681a8.netlify.app",
+  },
+});
 let users = [];
 
 const addUser = (user, socketId) => {
