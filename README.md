@@ -3,7 +3,7 @@
 lifeinvader is a twitter inspired, fully responsive full stack social media application built with the following technologies: 
 - React
 - JavaScript
-- -Typescript
+- Typescript
 - Styled-components
 - Node.js
 - Express.js
